@@ -16,7 +16,6 @@
             overflow-x: hidden;
         }
 
-        /* أنيميشن الخلفية */
         .bg-animate {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -45,7 +44,6 @@
             border-radius: 24px;
         }
 
-        /* نظام الإشعارات الجديد */
         #notification-container {
             position: fixed;
             bottom: 20px;
@@ -206,10 +204,9 @@
             
             container.appendChild(toast);
 
-            // تحريك شريط التحميل
             const progressBar = toast.querySelector('.progress-bar');
             let width = 100;
-            const duration = 3000; // 3 ثواني
+            const duration = 3000;
             const intervalTime = 10;
             const step = (intervalTime / duration) * 100;
 
@@ -233,7 +230,8 @@
 
         function exitControl() { location.reload(); }
 
-        function addAutoReply() {
+        // [تعديل] الوظيفة الآن تدعم الإرسال الفعلي لـ API الموقع
+        async function addAutoReply() {
             const userMsg = document.getElementById('userMsg').value;
             const botReply = document.getElementById('botReply').value;
 
@@ -242,19 +240,37 @@
                 return;
             }
 
-            const container = document.getElementById('repliesContainer');
-            const row = document.createElement('div');
-            row.className = "flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5";
-            row.innerHTML = `
-                <div class="text-sm">
-                    <span class="text-blue-500 font-bold">Q:</span> ${userMsg} 
-                    <span class="mx-3 text-gray-600">|</span> 
-                    <span class="text-green-500 font-bold">A:</span> ${botReply}
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-red-500 text-xs font-bold">حذف</button>
-            `;
-            container.prepend(row);
-            showNotify('تمت إضافة الرد بنجاح', 'success');
+            showNotify('جاري مزامنة الرد مع نظام Redis...', 'info');
+
+            try {
+                // إرسال البيانات لـ API السيرفر (Vercel)
+                const response = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: userMsg, a: botReply })
+                });
+
+                if(response.ok) {
+                    const container = document.getElementById('repliesContainer');
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5";
+                    row.innerHTML = `
+                        <div class="text-sm">
+                            <span class="text-blue-500 font-bold">Q:</span> ${userMsg} 
+                            <span class="mx-3 text-gray-600">|</span> 
+                            <span class="text-green-500 font-bold">A:</span> ${botReply}
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-red-500 text-xs font-bold">حذف</button>
+                    `;
+                    container.prepend(row);
+                    showNotify('تم الحفظ والمزامنة بنجاح ✅', 'success');
+                } else {
+                    showNotify('خطأ في الاتصال بالسيرفر ❌', 'error');
+                }
+            } catch (err) {
+                showNotify('حدث خطأ فني أثناء الحفظ', 'error');
+            }
+
             document.getElementById('userMsg').value = '';
             document.getElementById('botReply').value = '';
         }
