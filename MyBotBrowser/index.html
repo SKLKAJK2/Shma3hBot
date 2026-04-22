@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shma3hBot | Ultimate Operations Center</title>
+    <title>Shma3hBot | Ultimate Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
@@ -38,12 +38,46 @@
             to { transform: translate(20%, 20%); }
         }
 
-        /* تحسين الزجاج (Glassmorphism) */
         .glass {
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(59, 130, 246, 0.1);
             border-radius: 24px;
+        }
+
+        /* نظام الإشعارات الجديد */
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 16px 25px;
+            border-radius: 15px;
+            min-width: 320px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes slideIn { from { transform: translateX(-120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-120%); opacity: 0; } }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            width: 100%;
         }
 
         .sh-input {
@@ -64,12 +98,20 @@
         }
         .btn-main:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); }
 
-        /* التحكم في إظهار الأقسام */
+        .btn-sec {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.4s ease;
+        }
+        .btn-sec:hover { background: rgba(59, 130, 246, 0.1); transform: translateY(-3px); }
+
         #dashboard-section { display: none; opacity: 0; transform: translateY(30px); transition: 0.8s ease; }
         .active-dash { display: block !important; opacity: 1 !important; transform: translateY(0) !important; }
     </style>
 </head>
 <body onclick="hideMessages()">
+
+    <div id="notification-container"></div>
 
     <div class="bg-animate">
         <div class="glow-sphere"></div>
@@ -81,20 +123,23 @@
             <span class="text-xl font-black tracking-widest uppercase">Shma3h<span class="text-blue-500">Bot</span></span>
         </div>
         <button onclick="showControl()" class="bg-blue-600/10 border border-blue-500/30 text-blue-400 px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white transition-all">
-            ابدأ التحكم 🚀
+            لوحة التحكم 🚀
         </button>
     </nav>
 
     <header id="hero-section" class="pt-64 pb-32 px-4 text-center">
         <h1 class="text-7xl md:text-9xl font-black mb-8 tracking-tighter">
-            نظام <span class="text-blue-500 text-glow">شماعه</span> المطور
+            نظام <span class="text-blue-500">شماعه</span> المطور
         </h1>
         <p class="text-gray-400 text-lg md:text-2xl max-w-3xl mx-auto mb-16 leading-relaxed">
             المنصة الأقوى عالمياً لإدارة سيرفرات الديسكورد بحماية فائقة وذكاء اصطناعي متقدم.
         </p>
-        <div class="flex justify-center gap-6">
-            <button onclick="showControl()" class="btn-main px-12 py-5 rounded-2xl font-black text-xl shadow-2xl">
-                دخول غرفة العمليات
+        <div class="flex flex-col md:flex-row justify-center gap-6">
+            <button onclick="addBotNotify()" class="btn-main px-12 py-5 rounded-2xl font-black text-xl shadow-2xl flex items-center justify-center gap-3">
+                <span>🤖</span> إضافة البوت
+            </button>
+            <button onclick="showNotify('جاري فتح تذكرة دعم فني...', 'info')" class="btn-sec px-12 py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
+                <span>🎧</span> الدعم الفني
             </button>
         </div>
     </header>
@@ -109,68 +154,32 @@
         </div>
 
         <div class="grid lg:grid-cols-3 gap-8">
-            
             <div class="glass p-8 space-y-6">
                 <h3 class="text-xl font-black text-blue-500 flex items-center gap-2"><span>👤</span> الهوية والاسم</h3>
                 <input type="text" id="botName" class="sh-input" placeholder="اسم البوت الجديد...">
-                <input type="text" id="botAvatar" class="sh-input" placeholder="رابط صورة البوت...">
                 <button onclick="updateBot('identity')" class="w-full btn-main py-4 rounded-xl font-bold">حفظ التغييرات</button>
             </div>
 
             <div class="glass p-8 lg:col-span-2 space-y-6">
-                <h3 class="text-xl font-black text-blue-500 flex items-center gap-2"><span>💬</span> نظام الردود التلقائية الذكي</h3>
+                <h3 class="text-xl font-black text-blue-500 flex items-center gap-2"><span>💬</span> نظام الردود التلقائية</h3>
                 <div class="grid md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-xs text-gray-500 mr-2">عندما يرسل العضو:</label>
-                        <input type="text" id="userMsg" class="sh-input" placeholder="مثلاً: سلام">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs text-gray-500 mr-2">يرد البوت بـ:</label>
-                        <input type="text" id="botReply" class="sh-input" placeholder="مثلاً: وعليكم السلام">
-                    </div>
+                    <input type="text" id="userMsg" class="sh-input" placeholder="عندما يرسل العضو...">
+                    <input type="text" id="botReply" class="sh-input" placeholder="يرد البوت بـ...">
                 </div>
                 <button onclick="addAutoReply()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 py-4 rounded-xl font-black text-blue-400 transition-all">
-                    + إضافة الرد إلى قاعدة البيانات
+                    + إضافة الرد
                 </button>
-
-                <div id="repliesContainer" class="space-y-3 mt-6 max-h-48 overflow-y-auto pr-2">
-                    </div>
+                <div id="repliesContainer" class="space-y-3 mt-6 max-h-48 overflow-y-auto pr-2"></div>
             </div>
-
-            <div class="glass p-8 space-y-6">
-                <h3 class="text-xl font-black text-red-500 flex items-center gap-2"><span>🛡️</span> الحماية والـ IP</h3>
-                <div class="p-4 bg-red-500/5 rounded-xl border border-red-500/10">
-                    <p class="text-xs text-gray-400 mb-2">عنوان IP الحالي: <span class="text-white font-mono">192.168.1.104</span></p>
-                    <button onclick="alert('جاري تغيير الـ IP فوراً...')" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-lg text-xs font-bold transition-all">
-                        تغيير عنوان IP البوت الآن
-                    </button>
-                </div>
-            </div>
-
-            <div class="glass p-8 lg:col-span-2 flex flex-col md:flex-row gap-6 items-end">
-                <div class="flex-1 w-full space-y-2">
-                    <label class="text-xs text-gray-500">نشاط البوت الحالي:</label>
-                    <input type="text" id="botStatus" class="sh-input" placeholder="مثال: يراقب السيرفرات...">
-                </div>
-                <div class="w-full md:w-48 space-y-2">
-                    <select id="statusType" class="sh-input">
-                        <option value="PLAYING">يلعب</option>
-                        <option value="WATCHING">يشاهد</option>
-                        <option value="LISTENING">يستمع</option>
-                    </select>
-                </div>
-                <button onclick="updateBot('status')" class="btn-main px-8 py-4 rounded-xl font-bold whitespace-nowrap">تحديث الحالة</button>
-            </div>
-
         </div>
     </section>
 
     <div id="private-messages" class="fixed bottom-10 right-10 glass p-6 shadow-2xl z-[100] max-w-xs cursor-pointer border-blue-500/30">
         <div class="flex items-center gap-3 mb-2">
             <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
-            <span class="text-xs font-black text-blue-400">نظام المراسلة (shma3h)</span>
+            <span class="text-xs font-black text-blue-400 italic">User ID: 1423181773906378814</span>
         </div>
-        <p class="text-gray-400 text-xs leading-relaxed">تم حفظ بياناتك بنجاح. انقر في أي مكان بالشاشة لإخفاء هذا التنبيه.</p>
+        <p class="text-gray-400 text-xs">تم حفظ الرسائل الخاصة بنجاح. انقر للإخفاء.</p>
     </div>
 
     <footer class="py-20 text-center text-gray-700 text-sm font-bold">
@@ -178,45 +187,83 @@
     </footer>
 
     <script>
-        // دالة إظهار التحكم وإخفاء الواجهة
+        // نظام الإشعارات الاحترافي بشريط تحميل
+        function showNotify(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const progressColor = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
+            const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : '🔔');
+            
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">${icon}</span>
+                    <p class="text-sm font-bold text-gray-200">${message}</p>
+                </div>
+                <div class="progress-bar" style="background: ${progressColor}"></div>
+            `;
+            
+            container.appendChild(toast);
+
+            // تحريك شريط التحميل
+            const progressBar = toast.querySelector('.progress-bar');
+            let width = 100;
+            const duration = 3000; // 3 ثواني
+            const intervalTime = 10;
+            const step = (intervalTime / duration) * 100;
+
+            const interval = setInterval(() => {
+                width -= step;
+                progressBar.style.width = width + '%';
+                if (width <= 0) {
+                    clearInterval(interval);
+                    toast.style.animation = 'slideOut 0.5s ease forwards';
+                    setTimeout(() => toast.remove(), 500);
+                }
+            }, intervalTime);
+        }
+
         function showControl() {
             document.getElementById('hero-section').style.display = 'none';
-            const dash = document.getElementById('dashboard-section');
-            dash.classList.add('active-dash');
+            document.getElementById('dashboard-section').classList.add('active-dash');
+            showNotify('تم الدخول لغرفة العمليات بنجاح', 'success');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // دالة الخروج من التحكم
-        function exitControl() {
-            location.reload();
-        }
+        function exitControl() { location.reload(); }
 
-        // نظام الردود التلقائية
         function addAutoReply() {
             const userMsg = document.getElementById('userMsg').value;
             const botReply = document.getElementById('botReply').value;
 
             if(!userMsg || !botReply) {
-                alert("عبئ البيانات يا بطل!");
+                showNotify('عبئ البيانات يا بطل!', 'error');
                 return;
             }
 
             const container = document.getElementById('repliesContainer');
             const row = document.createElement('div');
-            row.className = "flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5 animate-pulse-once";
+            row.className = "flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5";
             row.innerHTML = `
                 <div class="text-sm">
-                    <span class="text-blue-500 font-bold">الرسالة:</span> ${userMsg} 
+                    <span class="text-blue-500 font-bold">Q:</span> ${userMsg} 
                     <span class="mx-3 text-gray-600">|</span> 
-                    <span class="text-green-500 font-bold">الرد:</span> ${botReply}
+                    <span class="text-green-500 font-bold">A:</span> ${botReply}
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-300 text-xs font-bold">حذف</button>
+                <button onclick="this.parentElement.remove()" class="text-red-500 text-xs font-bold">حذف</button>
             `;
             container.prepend(row);
-
-            // تفريغ الخانات
+            showNotify('تمت إضافة الرد بنجاح', 'success');
             document.getElementById('userMsg').value = '';
             document.getElementById('botReply').value = '';
+        }
+
+        function addBotNotify() {
+            showNotify('جاري تحويلك لإضافة البوت...', 'info');
+            setTimeout(() => {
+                window.open('https://discord.com/api/oauth2/authorize?client_id=1496525290153971924&permissions=8&scope=bot', '_blank');
+            }, 1000);
         }
 
         function hideMessages() {
@@ -228,11 +275,7 @@
         }
 
         function updateBot(type) {
-            alert("نظام شماعه: جاري التحديث...");
-        }
-
-        function addBotToDiscord() {
-            window.open('https://discord.com/api/oauth2/authorize?client_id=1496525290153971924&permissions=8&scope=bot', '_blank');
+            showNotify('نظام شماعه: جاري التحديث...', 'info');
         }
     </script>
 </body>
