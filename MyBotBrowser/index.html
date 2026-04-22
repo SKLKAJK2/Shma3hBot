@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shma3hBot - الواجهة الرسمية</title>
+    <title>Shma3hBot - الواجهة والتحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -13,7 +13,6 @@
             scroll-behavior: smooth;
         }
 
-        /* الإضاءة الخلفية الزجاجية للشريط العلوي */
         .nav-glass {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(15px);
@@ -21,11 +20,7 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.1);
         }
 
-        /* تأثير التوهج خلف الأزرار */
-        .btn-glow {
-            position: relative;
-            z-index: 1;
-        }
+        .btn-glow { position: relative; z-index: 1; }
         .btn-glow::after {
             content: '';
             position: absolute;
@@ -41,12 +36,25 @@
         }
         .btn-glow:hover::after { opacity: 1; }
 
-        /* توهج كروت المميزات */
+        .card-glow { transition: all 0.3s ease; }
         .card-glow:hover {
             border-color: rgba(59, 130, 246, 0.5);
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
             transform: translateY(-5px);
         }
+
+        /* تنسيق مدخلات لوحة التحكم */
+        .sh-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 1);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+        .sh-input:focus { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
 
         @keyframes pulseGlow {
             0%, 100% { opacity: 0.3; }
@@ -71,13 +79,12 @@
         <div class="hidden lg:flex items-center gap-10 text-gray-400 font-semibold text-sm">
             <a href="#features" class="hover:text-blue-400 transition-all">المميزات</a>
             <a href="#stats" class="hover:text-blue-400 transition-all">الإحصائيات</a>
-            <a href="#faq" class="hover:text-blue-400 transition-all">الأسئلة</a>
-            <a href="#support" class="hover:text-blue-400 transition-all">الدعم</a>
+            <a href="#dashboard" class="text-blue-400 font-bold">لوحة التحكم</a>
         </div>
 
         <div>
-            <a href="#" class="btn-glow bg-blue-600/10 border border-blue-500/40 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
-                <span>🚀</span> لوحة التحكم
+            <a href="#dashboard" class="btn-glow bg-blue-600/10 border border-blue-500/40 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
+                <span>🚀</span> ابدأ التحكم
             </a>
         </div>
     </nav>
@@ -89,51 +96,75 @@
         <p class="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto mb-12 leading-relaxed">
             بوت متكامل لإدارة سيرفرك بأعلى معايير الأمان والسرعة. المميزات التي تحتاجها، في مكان واحد، تحت توقيع "شماعه".
         </p>
-        <div class="flex flex-wrap justify-center gap-6">
-            <button onclick="addBotToDiscord()" class="btn-glow bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 shadow-xl">
-                إضافة البوت للسيرفر
-            </button>
-        </div>
+        <button onclick="addBotToDiscord()" class="btn-glow bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 shadow-xl">
+            إضافة البوت للسيرفر
+        </button>
     </header>
 
-    <section id="stats" class="py-20 px-4 max-w-6xl mx-auto">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow transition-all">
-                <div class="text-3xl font-black text-blue-500 mb-2">+150</div>
-                <div class="text-gray-400 text-sm">سيرفر نشط</div>
+    <section id="dashboard" class="py-24 px-4 max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-black mb-4">لوحة تحكم <span class="text-blue-500">البوت</span></h2>
+            <p class="text-gray-500">تحكم بهوية ونشاط البوت بشكل لحظي</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="p-8 rounded-3xl bg-slate-900/40 border border-slate-800 card-glow">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-blue-400">
+                    <span>👤</span> تعديل الهوية
+                </h3>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-xs text-gray-500 block mb-2 mr-2">اسم البوت الجديد</label>
+                        <input type="text" id="botName" class="sh-input" placeholder="اكتب الاسم هنا...">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 block mb-2 mr-2">رابط الصورة (URL)</label>
+                        <input type="text" id="botAvatar" class="sh-input" placeholder="https://image-link.com/logo.png">
+                    </div>
+                    <button onclick="updateBot('identity')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all">حفظ التغييرات</button>
+                </div>
             </div>
-            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow transition-all">
-                <div class="text-3xl font-black text-blue-500 mb-2">+50K</div>
-                <div class="text-gray-400 text-sm">مستخدم</div>
-            </div>
-            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow transition-all">
-                <div class="text-3xl font-black text-blue-500 mb-2">99.9%</div>
-                <div class="text-gray-400 text-sm">وقت التشغيل</div>
-            </div>
-            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow transition-all">
-                <div class="text-3xl font-black text-blue-500 mb-2">24/7</div>
-                <div class="text-gray-400 text-sm">دعم فني</div>
+
+            <div class="p-8 rounded-3xl bg-slate-900/40 border border-slate-800 card-glow">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-blue-400">
+                    <span>🎮</span> حالة النشاط
+                </h3>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-xs text-gray-500 block mb-2 mr-2">ماذا يفعل البوت؟</label>
+                        <input type="text" id="botStatus" class="sh-input" placeholder="مثال: يراقب السيرفر...">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 block mb-2 mr-2">نوع النشاط</label>
+                        <select id="statusType" class="sh-input">
+                            <option value="PLAYING">يلعب (Playing)</option>
+                            <option value="WATCHING">يشاهد (Watching)</option>
+                            <option value="LISTENING">يستمع (Listening)</option>
+                        </select>
+                    </div>
+                    <button onclick="updateBot('status')" class="w-full bg-blue-600/20 border border-blue-500/40 text-blue-400 hover:bg-blue-600 hover:text-white font-bold py-3 rounded-xl transition-all">تحديث الحالة</button>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="features" class="py-20 px-4 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold text-center mb-12">لماذا Shma3hBot؟</h2>
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="p-8 rounded-3xl bg-slate-900/30 border border-slate-800 card-glow transition-all">
-                <div class="text-4xl mb-4">🛡️</div>
-                <h3 class="text-xl font-bold mb-3 text-blue-400">حماية متطورة</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">تشفير كامل للبيانات وتغيير تلقائي للـ IP لضمان أعلى مستويات الأمان لسيرفرك.</p>
+    <section id="stats" class="py-20 px-4 max-w-6xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow">
+                <div class="text-3xl font-black text-blue-500 mb-2">+150</div>
+                <div class="text-gray-400 text-sm">سيرفر نشط</div>
             </div>
-            <div class="p-8 rounded-3xl bg-slate-900/30 border border-slate-800 card-glow transition-all">
-                <div class="text-4xl mb-4">⚡</div>
-                <h3 class="text-xl font-bold mb-3 text-blue-400">سرعة استجابة</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">أوامر فورية وبدون تأخير بفضل استضافة Vercel السحابية عالية الأداء.</p>
+            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow">
+                <div class="text-3xl font-black text-blue-500 mb-2">+50K</div>
+                <div class="text-gray-400 text-sm">مستخدم</div>
             </div>
-            <div class="p-8 rounded-3xl bg-slate-900/30 border border-slate-800 card-glow transition-all">
-                <div class="text-4xl mb-4">⚙️</div>
-                <h3 class="text-xl font-bold mb-3 text-blue-400">سهولة التخصيص</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">لوحة تحكم ذكية تمكنك من ضبط إعدادات البوت بضغطة زر واحدة.</p>
+            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow">
+                <div class="text-3xl font-black text-blue-500 mb-2">99.9%</div>
+                <div class="text-gray-400 text-sm">وقت التشغيل</div>
+            </div>
+            <div class="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 text-center card-glow">
+                <div class="text-3xl font-black text-blue-500 mb-2">24/7</div>
+                <div class="text-gray-400 text-sm">دعم فني</div>
             </div>
         </div>
     </section>
@@ -149,20 +180,33 @@
         <p class="text-gray-300 text-sm leading-relaxed">تم حفظ الرسائل بنجاح. اضغط للإخفاء.</p>
     </div>
 
+    <footer class="py-10 text-center text-gray-600 text-xs border-t border-slate-900">
+        made by : شماعه | Signed by shma3h
+    </footer>
+
     <script>
         function addBotToDiscord() {
-            // الرقم الخاص بك المستخرج من الصور
             const clientId = '1496525290153971924'; 
-            const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot`;
-            window.open(inviteUrl, '_blank');
+            window.open(`https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot`, '_blank');
         }
 
         function hideMessages() {
             const msgBox = document.getElementById('private-messages');
-            msgBox.style.opacity = '0';
-            setTimeout(() => { msgBox.style.display = 'none'; }, 500);
+            if(msgBox) {
+                msgBox.style.opacity = '0';
+                setTimeout(() => { msgBox.style.display = 'none'; }, 500);
+            }
+        }
+
+        function updateBot(type) {
+            if(type === 'identity') {
+                const name = document.getElementById('botName').value;
+                alert("نظام شماعه: جاري تحديث الاسم إلى " + (name || "الافتراضي"));
+            } else {
+                const status = document.getElementById('botStatus').value;
+                alert("نظام شماعه: تم إرسال حالة النشاط: " + status);
+            }
         }
     </script>
-
-    </body>
+</body>
 </html>
